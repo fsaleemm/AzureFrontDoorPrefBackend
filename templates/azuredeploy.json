@@ -3,34 +3,28 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "appName1": {
-            "defaultValue": "null",
+            "defaultValue": "",
             "type": "String"
-        },
-        "serverfarms_ASP_name1": {
-            "defaultValue": "null",
-            "type" : "String"
         },
         "appName2": {
-            "defaultValue": "null",
-            "type": "String"
-        },
-        "serverfarms_ASP_name2": {
-            "defaultValue": "null",
+            "defaultValue": "",
             "type": "String"
         },
         "frontdoors_name": {
-            "defaultValue": "null",
+            "defaultValue": "",
             "type": "String"
         }
     },
     "variables": {
-        "repoUrl" : "https://github.com/fsaleemm/AzureFrontDoorPrefBackend.git"
+        "repoUrl" : "https://github.com/fsaleemm/AzureFrontDoorPrefBackend.git",
+        "serverfarms_ASP_name1" : "[concat('ASP-', parameters('appName1'))]",
+        "serverfarms_ASP_name2" : "[concat('ASP-', parameters('appName2'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2018-02-01",
-            "name": "[parameters('serverfarms_ASP_name1')]",
+            "name": "[variables('serverfarms_ASP_name1')]",
             "location": "Central US",
             "sku": {
                 "name": "S1",
@@ -51,10 +45,10 @@
             "location": "Central US",
             "kind": "app",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_name1'))]"
+                "[resourceId('Microsoft.Web/serverfarms', variables('serverfarms_ASP_name1'))]"
             ],
             "properties": {
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_name1'))]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverfarms_ASP_name1'))]",
                 "siteConfig": {
                     "appSettings": [
                         {
@@ -87,7 +81,7 @@
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2018-02-01",
-            "name": "[parameters('serverfarms_ASP_name2')]",
+            "name": "[variables('serverfarms_ASP_name2')]",
             "location": "West US",
             "sku": {
                 "name": "S1",
@@ -108,10 +102,10 @@
             "location": "West US",
             "kind": "app",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_name2'))]"
+                "[resourceId('Microsoft.Web/serverfarms', variables('serverfarms_ASP_name2'))]"
             ],
             "properties": {
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_name2'))]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverfarms_ASP_name2'))]",
                 "siteConfig": {
                     "appSettings": [
                         {
@@ -157,8 +151,8 @@
                 "friendlyName": "[parameters('frontdoors_name')]",
                 "backendPools": [
                     {
-                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/fsdemoapp02')]",
-                        "name": "fsdemoapp02",
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/Backend2')]",
+                        "name": "Backend2",
                         "properties": {
                             "resourceState": "Enabled",
                             "backends": [
@@ -181,8 +175,8 @@
                         }
                     },
                     {
-                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/fsdemoapp01')]",
-                        "name": "fsdemoapp01",
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/Backend1')]",
+                        "name": "Backend1",
                         "properties": {
                             "resourceState": "Enabled",
                             "backends": [
@@ -205,8 +199,8 @@
                         }
                     },
                     {
-                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/Allfsdemoapps')]",
-                        "name": "Allfsdemoapps",
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/AllBackends')]",
+                        "name": "AllBackends",
                         "properties": {
                             "resourceState": "Enabled",
                             "backends": [
@@ -299,7 +293,7 @@
                                 "forwardingProtocol": "HttpsOnly",
                                 "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
                                 "backendPool": {
-                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/fsdemoapp02')]"
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/Backend2')]"
                                 }
                             }
                         }
@@ -315,7 +309,7 @@
         {
             "type": "Microsoft.Network/frontdoors/rulesengines",
             "apiVersion": "2020-05-01",
-            "name": "[concat(parameters('frontdoors_name'), '/LegacyBackEnd')]",
+            "name": "[concat(parameters('frontdoors_name'), '/PreferBackend1')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name'))]"
             ],
@@ -324,7 +318,7 @@
                 "rules": [
                     {
                         "priority": 0,
-                        "name": "fsdemoapp01",
+                        "name": "SelectBackend1",
                         "matchProcessingBehavior": "Continue",
                         "action": {
                             "requestHeaderActions": [],
@@ -333,14 +327,14 @@
                                 "forwardingProtocol": "HttpsOnly",
                                 "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
                                 "backendPool": {
-                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/fsdemoapp01')]"
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/Backend1')]"
                                 }
                             }
                         },
                         "matchConditions": [
                             {
                                 "rulesEngineMatchValue": [
-                                    "fsdemoapp01"
+                                    "Backend1"
                                 ],
                                 "rulesEngineMatchVariable": "RequestHeader",
                                 "rulesEngineOperator": "Equal",
