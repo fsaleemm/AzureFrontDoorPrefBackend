@@ -1,0 +1,310 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appName1": {
+            "defaultValue": "null",
+            "type": "String"
+        },
+        "serverfarms_ASP_name1": {
+            "defaultValue": "null",
+            "type" : "String"
+        },
+        "appName2": {
+            "defaultValue": "null",
+            "type": "String"
+        },
+        "serverfarms_ASP_name2": {
+            "defaultValue": "null",
+            "type": "String"
+        },
+        "frontdoors_name": {
+            "defaultValue": "null",
+            "type": "String"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[parameters('serverfarms_ASP_name1')]",
+            "location": "Central US",
+            "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "size": "S1",
+                "family": "S",
+                "capacity": 1
+            },
+            "kind": "app",
+            "properties": {
+                "reserved": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('appName1')]",
+            "location": "Central US",
+            "kind": "app",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_name1'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_name1'))]",
+                "siteConfig": {
+                    "appSettings": []
+                },
+                "clientAffinityEnabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[parameters('serverfarms_ASP_name2')]",
+            "location": "West US",
+            "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "size": "S1",
+                "family": "S",
+                "capacity": 1
+            },
+            "kind": "app",
+            "properties": {
+                "reserved": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('appName2')]",
+            "location": "West US",
+            "kind": "app",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_name2'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_name2'))]",
+                "siteConfig": {
+                    "appSettings": []
+                },
+                "clientAffinityEnabled": false
+            }
+        },
+
+        {
+            "type": "Microsoft.Network/frontdoors",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('frontdoors_name')]",
+            "location": "Global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('appName1'))]",
+                "[resourceId('Microsoft.Web/sites', parameters('appName2'))]"
+            ],
+            "properties": {
+                "resourceState": "Enabled",
+                "enabledState": "Enabled",
+                "friendlyName": "[parameters('frontdoors_name')]",
+                "backendPools": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/fsdemoapp02')]",
+                        "name": "fsdemoapp02",
+                        "properties": {
+                            "resourceState": "Enabled",
+                            "backends": [
+                                {
+                                    "address": "[reference(resourceId('Microsoft.Web/sites', parameters('appName2')), '2018-02-01').defaultHostName]",
+                                    "httpPort": 80,
+                                    "httpsPort": 443,
+                                    "priority": 1,
+                                    "weight": 50,
+                                    "backendHostHeader": "[reference(resourceId('Microsoft.Web/sites', parameters('appName2')), '2018-02-01').defaultHostName]",
+                                    "enabledState": "Enabled"
+                                }
+                            ],
+                            "healthProbeSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/HealthProbeSettings/healthProbeSettings-1')]"
+                            },
+                            "loadBalancingSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/LoadBalancingSettings/loadBalancingSettings-1')]"
+                            }
+                        }
+                    },
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/fsdemoapp01')]",
+                        "name": "fsdemoapp01",
+                        "properties": {
+                            "resourceState": "Enabled",
+                            "backends": [
+                                {
+                                    "address": "[reference(resourceId('Microsoft.Web/sites', parameters('appName1')), '2018-02-01').defaultHostName]",
+                                    "httpPort": 80,
+                                    "httpsPort": 443,
+                                    "priority": 1,
+                                    "weight": 50,
+                                    "backendHostHeader": "[reference(resourceId('Microsoft.Web/sites', parameters('appName1')), '2018-02-01').defaultHostName]",
+                                    "enabledState": "Enabled"
+                                }
+                            ],
+                            "healthProbeSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/HealthProbeSettings/healthProbeSettings-1')]"
+                            },
+                            "loadBalancingSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/LoadBalancingSettings/loadBalancingSettings-1')]"
+                            }
+                        }
+                    },
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/Allfsdemoapps')]",
+                        "name": "Allfsdemoapps",
+                        "properties": {
+                            "resourceState": "Enabled",
+                            "backends": [
+                                {
+                                    "address": "[reference(resourceId('Microsoft.Web/sites', parameters('appName1')), '2018-02-01').defaultHostName]",
+                                    "httpPort": 80,
+                                    "httpsPort": 443,
+                                    "priority": 1,
+                                    "weight": 50,
+                                    "backendHostHeader": "[reference(resourceId('Microsoft.Web/sites', parameters('appName1')), '2018-02-01').defaultHostName]",
+                                    "enabledState": "Enabled"
+                                },
+                                {
+                                    "address": "[reference(resourceId('Microsoft.Web/sites', parameters('appName2')), '2018-02-01').defaultHostName]",
+                                    "httpPort": 80,
+                                    "httpsPort": 443,
+                                    "priority": 1,
+                                    "weight": 50,
+                                    "backendHostHeader": "[reference(resourceId('Microsoft.Web/sites', parameters('appName2')), '2018-02-01').defaultHostName]",
+                                    "enabledState": "Enabled"
+                                }
+                            ],
+                            "healthProbeSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/healthProbeSettings/healthProbeSettings-1')]"
+                            },
+                            "loadBalancingSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/loadBalancingSettings/loadBalancingSettings-1')]"
+                            }
+                        }
+                    }
+                ],
+                "healthProbeSettings": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/HealthProbeSettings/healthProbeSettings-1')]",
+                        "name": "healthProbeSettings-1",
+                        "properties": {
+                            "intervalInSeconds": 30,
+                            "path": "/health.html",
+                            "protocol": "Https",
+                            "resourceState": "Enabled",
+                            "enabledState": "Enabled",
+                            "healthProbeMethod": "Head"
+                        }
+                    }
+                ],
+                "frontendEndpoints": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), concat('/FrontendEndpoints/', parameters('frontdoors_name'), '-azurefd-net'))]",
+                        "name": "[concat(parameters('frontdoors_name'), '-azurefd-net')]",
+                        "properties": {
+                            "hostName": "[concat(parameters('frontdoors_name'), '.azurefd.net')]",
+                            "sessionAffinityEnabledState": "Disabled",
+                            "sessionAffinityTtlSeconds": 0,
+                            "resourceState": "Enabled"
+                        }
+                    }
+                ],
+                "loadBalancingSettings": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/LoadBalancingSettings/loadBalancingSettings-1')]",
+                        "name": "loadBalancingSettings-1",
+                        "properties": {
+                            "additionalLatencyMilliseconds": 0,
+                            "sampleSize": 4,
+                            "successfulSamplesRequired": 2,
+                            "resourceState": "Enabled"
+                        }
+                    }
+                ],
+                "routingRules": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/RoutingRules/Default')]",
+                        "name": "Default",
+                        "properties": {
+                            "acceptedProtocols": [
+                                "Http",
+                                "Https"
+                            ],
+                            "patternsToMatch": [
+                                "/*"
+                            ],
+                            "enabledState": "Enabled",
+                            "resourceState": "Enabled",
+                            "frontendEndpoints": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), concat('/FrontendEndpoints/', parameters('frontdoors_name'), '-azurefd-net'))]"
+                                }
+                            ],
+                            "routeConfiguration": {
+                                "forwardingProtocol": "HttpsOnly",
+                                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                                "backendPool": {
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/fsdemoapp02')]"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "backendPoolsSettings": {
+                    "enforceCertificateNameCheck": "Enabled",
+                    "sendRecvTimeoutSeconds": 30
+                }
+            }
+        },
+
+        {
+            "type": "Microsoft.Network/frontdoors/rulesengines",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('frontdoors_name'), '/LegacyBackEnd')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name'))]"
+            ],
+            "properties": {
+                "resourceState": "Enabled",
+                "rules": [
+                    {
+                        "priority": 0,
+                        "name": "fsdemoapp01",
+                        "matchProcessingBehavior": "Continue",
+                        "action": {
+                            "requestHeaderActions": [],
+                            "responseHeaderActions": [],
+                            "routeConfigurationOverride": {
+                                "forwardingProtocol": "HttpsOnly",
+                                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                                "backendPool": {
+                                    "id": "[concat(resourceId('Microsoft.Network/frontdoors', parameters('frontdoors_name')), '/BackendPools/fsdemoapp01')]"
+                                }
+                            }
+                        },
+                        "matchConditions": [
+                            {
+                                "rulesEngineMatchValue": [
+                                    "fsdemoapp01"
+                                ],
+                                "rulesEngineMatchVariable": "RequestHeader",
+                                "rulesEngineOperator": "Equal",
+                                "transforms": [],
+                                "negateCondition": false,
+                                "selector": "x-pref-backend"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

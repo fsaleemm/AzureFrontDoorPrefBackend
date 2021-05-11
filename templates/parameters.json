@@ -1,0 +1,21 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appName1": {
+            "value": "fsappdemo01"
+        },
+        "serverfarms_ASP_name1": {
+            "value": "ASP-win-net5-fsappdemo01"
+        },
+        "appName2": {
+            "value": "fsappdemo02"
+        },
+        "serverfarms_ASP_name2": {
+            "value": "ASP-win-net5-fsappdemo02"
+        },
+        "frontdoors_name": {
+            "value": "fsfrntdr1"
+        }
+    }
+}
