@@ -14,7 +14,7 @@ A rules engine is deployed to the AFD with the following logic:
 
 ![Rules Engine Logic](/images/rulesengineconfig.PNG)
 
-Essentially, if the request has a header x-pref-backend with value 'Backend1' then the request is routed to Backend pool 'Backend1'. If the header value is something else or the header doe not exist, then the rules engine does not modify the routing. The routing will be based on the routing rule. In this case it is set to 'Backend2' as shown below:
+Essentially, if the request has a header x-pref-backend with value 'Backend1' then the request is routed to Backend pool 'Backend1'. If the header value is something else or the header does not exist, then the rules engine does not modify the routing. The routing will be based on the Default routing rule. In this case it is set to 'Backend2' as shown below:
 
 ![Default Backend](/images/defaultbackend.PNG)
 
