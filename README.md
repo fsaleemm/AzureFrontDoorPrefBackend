@@ -2,7 +2,7 @@
 
 # Azure Front Door Specify Preferred Region
 
-This is a reference deployment of two Web Apps in different regions and Azure Front Door to route traffic to a preferred Web App region using the AFD Rules Engine. The use case is if you have an operational need to route a portion of production traffic to a specific preferred region. Perhaps you are introducing a new feature and need to test the adoption with a subset of users before rolling out to all users. Another use case is, if you have a stateful application and would like to drain the sessions from an existing legacy Web application instance to new upgraded Web application instance without any disruption to your end users. 
+This is a reference deployment of two Web Apps in different regions and [Azure Front Door](https://docs.microsoft.com/en-us/azure/frontdoor/front-door-overview) to route traffic to a preferred Web App region using the [AFD Rules Engine](https://docs.microsoft.com/en-us/azure/frontdoor/front-door-rules-engine). The use case is if you have an operational need to route a portion of production traffic to a specific preferred region. Perhaps you are introducing a new feature and need to test the adoption with a subset of users before rolling out to all users. Another use case is, if you have a stateful application and would like to drain the sessions from an existing legacy Web application instance to new upgraded Web application instance without any disruption to your end users. 
 
 # Demo Components
 
@@ -33,7 +33,7 @@ NOTE: The AFD changes take some time to propagate, please wait a few minutes bef
 
 # Testing
 
-Use a tool like Postman to submit requests to the Azure Front Door to test the routing based on x-pref-backend request header.
+Use a tool like [Postman](https://www.postman.com/) to submit requests to the Azure Front Door to test the routing based on x-pref-backend request header.
 
 1. Launch Postman tool, and type in the URL of the Azure Fron Door to send a Get request. 
 1. Notice the response back from the AFD. It should be the AppName2 you specified during deployment.
