@@ -24,6 +24,7 @@
         }
     },
     "variables": {
+        "repoUrl" : "https://github.com/fsaleemm/AzureFrontDoorPrefBackend.git"
     },
     "resources": [
         {
@@ -55,10 +56,33 @@
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_name1'))]",
                 "siteConfig": {
-                    "appSettings": []
+                    "appSettings": [
+                        {
+                            "name": "AppName",
+                            "value": "[parameters('appName1')]"
+                        }
+                    ],
+                    "phpVersion": "7.4"
                 },
                 "clientAffinityEnabled": false
-            }
+            },
+            "resources": [
+                {
+                    "condition": "[contains(variables('repoUrl'),'http')]",
+                    "type": "sourcecontrols",
+                    "apiVersion": "2020-06-01",
+                    "name": "web",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('appName1'))]"
+                    ],
+                    "properties": {
+                    "repoUrl": "[variables('repoUrl')]",
+                    "branch": "main",
+                    "isManualIntegration": true
+                    }
+                }
+            ]
         },
         {
             "type": "Microsoft.Web/serverfarms",
@@ -89,10 +113,33 @@
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_name2'))]",
                 "siteConfig": {
-                    "appSettings": []
+                    "appSettings": [
+                        {
+                            "name": "AppName",
+                            "value": "[parameters('appName2')]"
+                        }
+                    ],
+                    "phpVersion": "7.4"
                 },
                 "clientAffinityEnabled": false
-            }
+            },
+            "resources": [
+                {
+                    "condition": "[contains(variables('repoUrl'),'http')]",
+                    "type": "sourcecontrols",
+                    "apiVersion": "2020-06-01",
+                    "name": "web",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('appName2'))]"
+                    ],
+                    "properties": {
+                    "repoUrl": "[variables('repoUrl')]",
+                    "branch": "main",
+                    "isManualIntegration": true
+                    }
+                }
+            ]
         },
 
         {
